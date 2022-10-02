@@ -7,6 +7,7 @@ library dart_generic_lib;
 
 export 'src/base/file_util.dart';
 export 'src/base/date_util.dart';
+export 'src/print/run_zoned.dart';
 export 'src/isolate/dense_isolate_interface.dart';
 export 'src/shell/shell_util.dart';
 export 'src/extension_util.dart';
