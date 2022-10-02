@@ -6,9 +6,9 @@
 // void overrideDebugPrint() {
 //   /// 覆盖debugPrint
 //   // final DebugPrintCallback oldCallback = debugPrint;
-//   debugPrint = (String? s, {int? wrapWidth}) {
-//     // String? message
-//     _debugPrintSynchronouslyWithText(s, wrapWidth: wrapWidth);
+//   debugPrint = (String? message, {int? wrapWidth}) {
+//     // _debugPrintSynchronouslyWithText(message, wrapWidth: wrapWidth);
+//     debugPrintSynchronously('来源debugPrint(找到替换为print): $message', wrapWidth: wrapWidth);
 //   };
 // }
 //
