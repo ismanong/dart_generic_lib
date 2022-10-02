@@ -21,3 +21,8 @@ dependencies:
   dart_generic_lib:
     path: ../dart_generic_lib/
 ```
+```yml
+dependencies:
+  dart_generic_lib:
+    path: D:/_my/flutter_all_platform/packages/dart_generic_lib/
+```
