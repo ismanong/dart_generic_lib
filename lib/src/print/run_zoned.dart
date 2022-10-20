@@ -5,6 +5,7 @@ import 'package:stack_trace/stack_trace.dart'; // 解析堆栈
 /// dart:developer库包含允许调试器在对象上打开检查器的检查功能。
 /// import 'dart:developer';
 /// inspect(message);
+import 'dart:developer' as developer;
 
 // import 'override_debug_print.dart';
 
@@ -21,6 +22,7 @@ import 'package:stack_trace/stack_trace.dart'; // 解析堆栈
 void runZonedHelper(
   Future<void> Function() executeFunctionBlock, [
   Future<void> Function(Object error, StackTrace stackTrace)? onError,
+  void Function(String log)? logCallback,
 ]) {
   /// 开启log颜色
   ansiColorDisabled = false;
@@ -53,9 +55,17 @@ void runZonedHelper(
       /// zone 表示执行run操作的 zone。很多操作需要明确该操作是在哪个Zone中被调用
       print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
         /// print('---- $line'); // 会死循环
-        var message = prettyLine(line);
+        var printMessage = convertPrintMessage(line);
+        if (logCallback != null) {
+          logCallback(printMessage.toString());
+        }
         // logBackend.writeLog(message);
-        parent.print(zone, message);
+        /// 发送到控制台
+        parent.print(zone, printMessage.toStringWithTerminal());
+        // developer.log(
+        //   message,
+        //   name: 'MyApp',
+        // );
       },
 
       /// 处理未捕获的异常
@@ -84,29 +94,45 @@ void runZonedHelper(
 
 const unknownLog = '???';
 const rnEnter = '\r\n';
-String prettyLine(String message) {
+
+PrintMessage convertPrintMessage(String message) {
   final trace = Trace.from(StackTrace.current);
   final frame = trace.frames[5]; // 当前执行的代码片段 2 5 根据实际情况 可以作为参数
   final date = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
   String member = frame.member ?? unknownLog;
-  // // ------------------------------- 兼容
-  // if (member == 'debugPrintSynchronously') {
-  //   member = trace.frames[8].member ?? unknownLog;
+  // if (frame.isCore) {
+  //   AnsiPen pen = AnsiPen()..magenta(bold: true);
+  //   member = pen(member);
+  // } else {
+  //   AnsiPen pen = AnsiPen()..yellow(bold: true);
+  //   member = pen(member);
   // }
-  // // ------------------------------- 兼容end
-  if (frame.isCore) {
-    AnsiPen pen = AnsiPen()..magenta(bold: true);
-    member = pen(member);
-  } else {
+  return PrintMessage(date, member, message);
+}
+
+class PrintMessage {
+  final String date;
+  final String member;
+  final String message;
+  PrintMessage(this.date, this.member, this.message);
+
+  @override
+  String toString() {
+    return "[$date - $member]: $message";
+  }
+
+  String toStringWithTerminal() {
+    var member2 = '';
+    var message2 = '';
     AnsiPen pen = AnsiPen()..yellow(bold: true);
-    member = pen(member);
+    member2 = pen(member);
+    if (message.contains('TODO')) {
+      AnsiPen pen = AnsiPen()..green();
+      message2 = pen(message);
+    } else if (message.contains('#0')) {
+      AnsiPen pen = AnsiPen()..red();
+      message2 = "\n${pen(message)}";
+    }
+    return "[$date - $member2]: $message2";
   }
-  if (message.contains('TODO')) {
-    AnsiPen pen = AnsiPen()..green();
-    message = pen(message);
-  } else if (message.contains('#0')) {
-    AnsiPen pen = AnsiPen()..red();
-    message = "\n${pen(message)}";
-  }
-  return "[$date - $member]: $message";
 }

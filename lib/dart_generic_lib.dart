@@ -13,3 +13,4 @@ export 'src/shell/shell_util.dart';
 export 'src/extension_util.dart';
 export 'src/version_util.dart';
 export 'src/bin_util.dart';
+export 'src/log/local_logger.dart';
