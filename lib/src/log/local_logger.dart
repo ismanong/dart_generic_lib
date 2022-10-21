@@ -4,6 +4,7 @@ import 'dart:isolate';
 import 'package:path/path.dart' as p;
 
 import '../base/date_util.dart';
+import '../base/file_util.dart';
 
 // main() async {
 //   // var filename = '${DateUtil.currentYYYYMMDD()}.log';
@@ -11,20 +12,32 @@ import '../base/date_util.dart';
 //   // var file = File(filepath);
 //   // file.create();
 //   await LocalLogger.create('C:\\Users\\52644\\Desktop\\test');
-//   LocalLogger.send();
-//   LocalLogger.send();
-//   LocalLogger.send();
-//   LocalLogger.send();
-//   LocalLogger.send();
-//   LocalLogger.send();
-//   LocalLogger.send();
+//   LocalLogger.send('111');
+//   LocalLogger.send('222');
+//   LocalLogger.send('333');
+//   LocalLogger.send('444');
+//   LocalLogger.send('555');
 //
 //   await Future.delayed(const Duration(seconds: 100));
 // }
 
 /// 持续任务
 class LocalLogger {
+  static Future<List<String>> getLogs7Days() async {
+    List<String> fs = await FileUtil.getAllFilePath(logsDir);
+    // 应该至少有一个
+    if(fs.isNotEmpty){
+      var maxIndex = fs.length >= 7 ? 7 : fs.length;
+      var newFs = fs.reversed.toList().sublist(0, maxIndex);
+      return newFs;
+    }else{
+      return [];
+    }
+  }
+
+  static late String logsDir;
   static late SendPort childSendPort;
+  static Isolate? newIsolate;
   static void send(String log) async {
     childSendPort.send(log);
   }
@@ -34,8 +47,12 @@ class LocalLogger {
 
   ///
   static Future<void> create(String dir) async {
+    if(newIsolate != null){
+      return;
+    }
+    logsDir = dir;
     ReceivePort receivePort = ReceivePort();
-    var newIsolate = await Isolate.spawn<List<dynamic>>(
+    newIsolate = await Isolate.spawn<List<dynamic>>(
       _entryPoint,
       [
         receivePort.sendPort,
@@ -71,7 +88,7 @@ class LocalLogger {
     //   processRequest(storageDirectory, data);
     // });
     await for (var data in receivePort) {
-      // print('主线程 -> 子线程: $data');
+      print('主线程 -> 子线程: $data');
       await processRequest(storageDirectory, data);
     }
   }

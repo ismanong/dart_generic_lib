@@ -132,6 +132,8 @@ class PrintMessage {
     } else if (message.contains('#0')) {
       AnsiPen pen = AnsiPen()..red();
       message2 = "\n${pen(message)}";
+    }else{
+      message2 = message;
     }
     return "[$date - $member2]: $message2";
   }
