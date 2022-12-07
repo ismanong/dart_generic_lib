@@ -47,6 +47,7 @@ class LocalLogger {
 
   ///
   static Future<void> create(String dir) async {
+    final completer = Completer();
     if(newIsolate != null){
       return;
     }
@@ -65,10 +66,17 @@ class LocalLogger {
     /// 获取子线程通讯方式
     // SendPort childSendPort = await receivePort.first;
     childSendPort = await receivePort.first;
+    // receivePort.listen((data) {
+    //   if (data is SendPort) {
+    //     childSendPort = data;
+    //     completer.complete();
+    //   }
+    // });
 
     /// 销毁
     // 可以在适当的时候，调用以下方法杀死创建的 isolate
-    // newIsolate.kill(priority: Isolate.immediate);
+    // newIsolate!.kill(priority: Isolate.immediate);
+    // await completer.future;
   }
 
   /// 子线程的入口点函数
